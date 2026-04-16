@@ -11,3 +11,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 // Other background processes can be added here.
+
