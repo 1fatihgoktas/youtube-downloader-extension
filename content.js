@@ -1,33 +1,55 @@
-// content.js
+// YouTube video sayfasında indir düğmesi ekle
+const addDownloadButton = () => {
+  // Eğer zaten düğme varsa, tekrar ekleme
+  if (document.getElementById('yt-downloader-btn')) return;
 
-// Function to inject the download button below YouTube videos
-function injectDownloadButton() {
-    // Check if the video player is present
-    const player = document.querySelector('.html5-video-player');
-    if (!player) return;
+  // Video bilgilerini al
+  const videoTitle = document.querySelector('h1.title yt-formatted-string')?.textContent || 'video';
+  const videoId = new URLSearchParams(window.location.search).get('v');
+  
+  if (!videoId) return;
 
-    // Check if the button already exists
-    if (document.getElementById('download-button')) return;
+  // Düğme container'ını bul
+  const buttonContainer = document.querySelector('#above-the-fold .super-title-container');
+  
+  if (buttonContainer) {
+    // İndir düğmesi oluştur
+    const downloadBtn = document.createElement('button');
+    downloadBtn.id = 'yt-downloader-btn';
+    downloadBtn.textContent = '⬇️ MP4 İndir';
+    downloadBtn.style.cssText = `
+      background-color: #ff0000;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 24px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 10px 5px 0 0;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    `;
 
-    // Create the download button
-    const downloadButton = document.createElement('button');
-    downloadButton.innerText = 'Download Video';
-    downloadButton.id = 'download-button';
-    downloadButton.style.marginTop = '10px';
-    downloadButton.style.backgroundColor = '#ff0000';
-    downloadButton.style.color = '#fff';
-    downloadButton.style.border = 'none';
-    downloadButton.style.padding = '10px';
-    downloadButton.style.cursor = 'pointer';
+    downloadBtn.onmouseover = () => {
+      downloadBtn.style.backgroundColor = '#cc0000';
+    };
+    downloadBtn.onmouseout = () => {
+      downloadBtn.style.backgroundColor = '#ff0000';
+    };
 
-    // Add event listener for download functionality (stub)
-    downloadButton.addEventListener('click', () => {
-        alert('Download functionality not implemented yet.');
-    });
+    downloadBtn.onclick = () => {
+      chrome.runtime.sendMessage({ 
+        action: 'openDownloadPopup', 
+        videoId: videoId, 
+        videoTitle: videoTitle 
+      });
+    };
 
-    // Inject the button below the player
-    player.appendChild(downloadButton);
-}
+    buttonContainer.appendChild(downloadBtn);
+  }
+};
 
-// Run the function on page load
-window.addEventListener('load', injectDownloadButton);
+// Sayfa yüklendiğinde ve dinamik içerik değiştiğinde düğme ekle
+addDownloadButton();
+window.addEventListener('yt-navigate-finish', addDownloadButton);
+document.addEventListener('DOMContentLoaded', addDownloadButton);
